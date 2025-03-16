@@ -7,6 +7,7 @@ public class CameraManager : MonoBehaviour
     public float distance = 5f;
 
     private float angle;
+    private float height;
     [Range(0,5)] public float speed = 0.7f;
     public float smoothness = 2.5f;
     
@@ -26,8 +27,15 @@ public class CameraManager : MonoBehaviour
     private void FollowPlayer()
     {
         angle += PlayerManager.GetCameraInput().x * speed * Time.deltaTime;
+
+        if (offset.y < 0.5f +0.1f && offset.y > -(PlayerManager.instance.GetControlledEntity().position.y + distance +0.1f))
+        {
+            height += PlayerManager.GetCameraInput().y * speed * Time.deltaTime;
+        }
         
         offset.x = Mathf.Sin(angle) * distance;
+        offset.y = Mathf.Cos(height) * distance;
+        offset.y = Mathf.Clamp(offset.y, -(PlayerManager.instance.GetControlledEntity().position.y + distance), 0.5f);
         offset.z = Mathf.Cos(angle) * distance;
         
         Vector3 desiredPosition = PlayerManager.instance.GetControlledEntity().position - offset;

@@ -10,6 +10,7 @@ public class PlayerManager : MonoBehaviour
     [SerializeField] private float moveSpeed;
     [SerializeField] private float rotationSpeed;
     private Vector3 moveDirection;
+    private Vector3 inputDirection;
     private Vector3 cameraDirection;
 
     private void Awake()
@@ -39,8 +40,8 @@ public class PlayerManager : MonoBehaviour
 
     private void ReadInputs()
     {
-        moveDirection = new Vector3(inputs.Base.Move.ReadValue<Vector2>().x, 0, inputs.Base.Move.ReadValue<Vector2>().y);
-        cameraDirection = new Vector3(inputs.Base.CameraRotation.ReadValue<Vector2>().x, 0, inputs.Base.CameraRotation.ReadValue<Vector2>().y);
+        inputDirection = new Vector3(inputs.Base.Move.ReadValue<Vector2>().x, 0, inputs.Base.Move.ReadValue<Vector2>().y);
+        cameraDirection = new Vector3(inputs.Base.CameraRotation.ReadValue<Vector2>().x, inputs.Base.CameraRotation.ReadValue<Vector2>().y,0 );
     }
     
     private void FixedUpdate()
@@ -50,13 +51,19 @@ public class PlayerManager : MonoBehaviour
 
     private void Move()
     {
-        if (moveDirection.magnitude != 0)
+        if (inputDirection.magnitude != 0)
         {
-            controlled.transform.position += moveDirection * (moveSpeed * Time.deltaTime);
             
+            float targetAngle = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg + Camera.main.transform.eulerAngles.y;
+            moveDirection = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
+
             Quaternion desiredRotation = Quaternion.LookRotation(moveDirection);
             controlled.transform.rotation = Quaternion.Lerp(controlled.transform.rotation, desiredRotation,
                 rotationSpeed * Time.deltaTime);
+
+
+            controlled.transform.position += moveDirection * (moveSpeed * Time.deltaTime);
+            
         }
     }
 
